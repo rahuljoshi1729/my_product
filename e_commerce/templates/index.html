@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product List</title>
+    <style>
+        header{
+            background-color: rgba(0, 0, 0, 0.421);
+            padding:0.5rem;
+            display: flex;
+            justify-content: center;
+            font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            font-size: 25px;
+            font-weight: bolder;
+        }
+        
+        #product-form{
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width:50%;
+
+        }
+
+        body{
+            background-image: url(https://i.pinimg.com/564x/2e/56/ce/2e56ce0c672816327ba60467728945c2.jpg);
+            background-size:cover ;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="header_h1">PRODUCT CATALOGS</h1>
+    </header>
+    <label for="list-product"><h1>#Click here to get list of all the products:</h1></label>
+    <button id="list-button">List Products</button>
+    <div id="product-list">
+        <!-- Data will be displayed here -->
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#list-button").click(function () {
+                // Make an AJAX request to your API
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product_list/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var productList = $("#product-list");
+                        productList.empty();  // Clear previous data
+    
+                        if (data.length > 0) {
+                            for (var i = 0; i < data.length; i++) {
+                                var product = data[i];
+                                productList.append("<p><strong>Product Name:</strong> " + product.name + "</p>");
+                                productList.append("<p><strong>Product Description:</strong> " + product.description + "</p>");
+                                productList.append("<p><strong>Price:</strong> " + product.price + "</p>");
+                                productList.append("<p><strong>Price:</strong> " + product.inventory + "</p>");
+                                productList.append("<hr>");  
+                            }
+                        } else {
+                            productList.append("<p>No products found.</p>");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error while fetching data from the API.");
+                        console.log("Status:", status);
+                        console.log("Error:", error);
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<h1>#Create a New Product:</h1>
+    <button id="show-form-button">Show Create Form</button>
+    
+    <form id="product-form" style="display: none;">
+        <br>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br>
+
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" required><br>
+
+        <label for="inventory">Inventory:</label>
+        <input type="number" id="inventory" name="inventory" required><br>
+
+        <button type="button" id="submit-button">Submit</button>
+    </form>
+
+    <div id="product-list">
+        <!-- Data will be displayed here -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#show-form-button").click(function () {
+                // Show the create form
+                $("#product-form").show();
+            });
+
+            $("#submit-button").click(function () {
+                // Prepare the data to be sent to the API
+                var productData = {
+                    name: $("#name").val(),
+                    description: $("#description").val(),
+                    price: $("#price").val(),
+                    inventory: $("#inventory").val()
+                };
+
+                // Make an AJAX request to create a new product
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product_create/',  // Replace with the correct API endpoint
+                    type: 'POST',
+                    dataType: 'json',
+                    data: productData,
+                    success: function (data) {
+                        // Handle the response from the API 
+                        alert("Product created successfully!");
+
+                        // Clear the form and hide it
+                        $("#product-form")[0].reset();
+                        $("#product-form").hide();
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error while creating a new product.");
+                        console.log("Status:", status);
+                        console.log("Error:", error);
+                    }
+                });
+            });
+        });
+    </script>
+
+<h1># Delete All Records:</h1>
+    <button id="delete-button">Delete All Records</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#delete-button").click(function () {
+                // Make an AJAX request to the API to delete all records
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product_del/',  
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function (data) {
+                        alert("All records deleted successfully!");
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error while deleting all records.");
+                        console.log("Status:", status);
+                        console.log("Error:", error);
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<h1>#Retrieve Product Details by PID:</h1>
+    <label for="pid">Enter PID:</label>
+    <input type="number" id="pid" required><br>
+    <button id="retrieve-button">Retrieve Product Details</button>
+    <div id="product-details"></div>
+    <div id="error-message" style="color: red;"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#retrieve-button").click(function () {
+                var pid = $("#pid").val();
+
+                // Make an AJAX GET request to the API to retrieve the product details by PID
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product_detail/' + pid + '/',  // Replace with the correct API endpoint
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data) {
+                            $("#product-details").html("<strong>Name:</strong> " + data.name + "<br><strong>Description:</strong> " + data.description + "<br><strong>Price:</strong> " + data.price + "<br><strong>inventory:</strong> " + data.inventory);
+                            $("#error-message").empty();  // Clear any previous error messages
+                        } else {
+                            $("#error-message").text("Product with PID " + pid + " not found.");
+                            $("#product-details").empty();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error while retrieving the product details.");
+                        console.log("Status:", status);
+                        console.log("Error:", error);
+                        $("#error-message").text("Error while retrieving the product details.");
+                        $("#product-details").empty();
+                    }
+                });
+            });
+        });
+
+</script>
+
+
+
+<h1>#Replace Product by PID:</h1>
+<div id="product-form">
+    <label for="pidd">Enter PID of Product to Replace:</label>
+    <input type="number" id="pidd" required><br>
+    <label for="new-name">New Name:</label>
+    <input type="text" id="new-name" required><br>
+    <label for="new-description">New Description:</label>
+    <textarea id="new-description" required></textarea><br>
+    <label for="new-price">New Price:</label>
+    <input type="number" id="new-price" required><br>
+    <label for="new-inventory">New Inventory:</label>
+    <input type="number" id="new-inventory" required><br>
+    <button id="replace-button">Replace Product</button>
+    <div id="success-message" style="color: green;"></div>
+    <div id="error-message" style="color: red;"></div>
+</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#replace-button").click(function () {
+                var pidd = $("#pidd").val();
+                var newName = $("#new-name").val();
+                var newDescription = $("#new-description").val();
+                var newPrice = $("#new-price").val();
+                var newInventory = $("#new-inventory").val();
+
+              
+
+                // Prepare the data to be sent to the API
+                var productData = {
+                    name: newName,
+                    description: newDescription,
+                    price: newPrice,
+                    inventory: newInventory
+                };
+
+                // Make an AJAX PUT request to replace the product
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product_replace/' + pidd + '/',
+                    type: 'PUT',
+                    dataType: 'json',
+                    data: productData,
+                    success: function (data) {
+                        $("#success-message").text("Product with PID " + pidd + " replaced successfully!");
+                        $("#error-message").empty();
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error while replacing the product.");
+                        console.log("Status:", status);
+                        console.log("Error:", error);
+                        $("#error-message").text("Error while replacing the product.");
+                        $("#success-message").empty();
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<h1>#Delete Product by Name:</h1>
+<label for="name">Enter Name of Product to Delete:</label>
+<input type="text" id="name" required><br>
+<button id="delete-button">Delete Product</button>
+<div id="success-message" style="color: green;"></div>
+<div id="error-message" style="color: red;"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#delete-button").click(function () {
+            var name = $("#name").val();  // Get the product name from the input field
+
+            // Make an AJAX DELETE request to delete the product by name
+            $.ajax({
+                url: 'http://127.0.0.1:8000/api/products_spec_del/' + name + '/', 
+                type: 'DELETE',
+                dataType: 'json',
+                success: function (data) {
+                    $("#success-message").text("Product with name " + name + " deleted successfully!");
+                    $("#error-message").empty();
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error while deleting the product.");
+                    console.log("Status:", status);
+                    console.log("Error:", error);
+                    $("#error-message").text("Error while deleting the product.");
+                    $("#success-message").empty();
+                }
+            });
+        });
+    });
+</script>
+
+
+
+
+<h1>#Expensive Products:</h1>
+    <label for="p">Number of Products:</label>
+    <input type="number" id="p" required>
+    <button id="get-products">Get Expensive Products</button>
+    <div id="product-results"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // When the "Get Expensive Products" button is clicked
+            $("#get-products").click(function () {
+                var p = $("#p").val();
+                fetchExpensiveProducts(p);
+            });
+
+            // Function to fetch expensive products using AJAX
+            function fetchExpensiveProducts(p) {
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product/expensive/?p='+ p, 
+                    type: 'GET',
+                    data: { p: p },
+                    dataType: 'json',
+                    success: function (data) {
+                        var productResults = $("#product-results");
+                        productResults.empty(); // Clear previous results
+                        if (data.length > 0) {
+                            productResults.append("<h2>Expensive Products:</h2>");
+                            var ul = $("<ul>");
+                            $.each(data, function (index, product) {
+                                ul.append("<li>" + product.name + " - $" + product.price + " "+ product.description+" "+product.inventory+"</li>");
+                            });
+                            productResults.append(ul);
+                        } else {
+                            productResults.append("<p>No expensive products found.</p>");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", status, error);
+                        $("#product-results").text("Error while fetching products.");
+                    }
+                });
+            }
+        });
+    </script>
+
+
+<h1>#Products with Zero Inventory:</h1>
+<button id="check-button">Check</button>
+<div id="product-li"></div>
+<p id="message"></p>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#check-button").click(function () {
+            $.ajax({
+                url: 'http://127.0.0.1:8000/api/product/not_available/',  
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.length > 0) {
+                        var productLi = $("#product-li");
+                        productLi.empty();  // Fixed typo in the element ID
+                        $.each(data, function (index, product) {
+                            productLi.append("<li>"+"<h2>" +  product.name + "  -  " + product.description + "   - $" + product.price + product.inventory+ "</h2>"+"</li>");
+                        });
+                        $("#message").text("");
+                    } else {
+                        productLi.empty();  // Fixed typo in the element ID
+                        $("#message").text("No products with zero inventory found.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", status, error);
+                    productLi.empty();  // Fixed typo in the element ID
+                    $("#message").text("Error while fetching products.");
+                }
+            });
+        });
+    });
+</script>
+
+
+<h1>#Buy Product:</h1>
+    <label for="pid-input">Enter Product ID (PID):</label>
+    <input type="text" id="pid-input" placeholder="Enter PID">
+    <button id="buy-button">Buy Product</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#buy-button").click(function () {
+                var pid = $("#pid-input").val();  
+
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/product/buy/',  
+                    type: 'GET',
+                    data: { PID: pid },  // Use the PID entered by the user
+                    dataType: 'json',
+                    success: function (data) {
+                        alert("Product bought: " + data.detail); 
+                    },
+                    error: function (xhr, status, error) {
+                        alert(xhr.responseJSON.detail);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
